@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Manage Cameras</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+    <main class="main-content fade-in-up">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-primary m-0">Cameras</h2>
+            <button class="btn btn-primary-glass" onclick="openAddModal()">
+                <i data-lucide="camera"></i> Add Camera
+            </button>
+        </div>
+
+        <div class="glass-card">
+            <table class="table align-middle mb-0" style="background:transparent">
+                <thead class="text-secondary small text-uppercase">
+                    <tr>
+                        <th class="ps-4 border-0">Code</th>
+                        <th class="border-0">URL / IP</th>
+                        <th class="border-0">Classroom</th>
+                        <th class="text-end pe-4 border-0">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <tr>
+                        <td colspan="4" class="text-center py-4">Loading...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+
+    <!-- Add Camera Modal -->
+    <div class="modal fade" id="addModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 p-4" style="border-radius:24px;">
+                <h5 class="fw-bold mb-3">Add New Camera</h5>
+                <form id="addForm">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Camera Code</label>
+                        <input type="text" id="code" class="form-control" placeholder="e.g. CAM-01" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">RTSP / HTTP URL</label>
+                        <input type="text" id="url" class="form-control" placeholder="rtsp://..." required>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary">Classroom</label>
+                        <select id="classroomSelect" class="form-select" required>
+                            <option value="">Select Classroom...</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary-glass w-100">Add Camera</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Camera Modal -->
+    <div class="modal fade" id="editModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 p-4" style="border-radius:24px;">
+                <h5 class="fw-bold mb-3">Edit Camera</h5>
+                <form id="editForm">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Camera Code</label>
+                        <input type="text" id="editCode" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">RTSP / HTTP URL</label>
+                        <input type="text" id="editUrl" class="form-control" placeholder="rtsp://..." required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold text-secondary">Status</label>
+                        <select id="editStatus" class="form-select">
+                            <option value="ACTIVE">ACTIVE</option>
+                            <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label small fw-bold text-secondary">Classroom</label>
+                        <select id="editClassroomSelect" class="form-select" required>
+                            <option value="">Select Classroom...</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary-glass w-100">Update Camera</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/config.js"></script>
+    <script src="../shared/api.js"></script>
+    <script src="../shared/auth.js"></script>
+    <script src="../shared/admin-layout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        let modal;
+        let editModal;
+        let classroomsMap = {};
+        let currentCameraId = null;
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!Auth.checkAuth('ROLE_ADMIN')) return;
+
+            modal = new bootstrap.Modal(document.getElementById('addModal'));
+            editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            await loadClassrooms();
+            await loadCameras();
+
+            document.getElementById('addForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await createCamera();
+            });
+
+            document.getElementById('editForm').addEventListener('submit', async (e) => {
+                e.preventDefault();
+                await updateCamera();
+            });
+        });
+
+        async function loadClassrooms() {
+            try {
+                const data = await api.get('/admin/classrooms');
+                const sel = document.getElementById('classroomSelect');
+                const editSel = document.getElementById('editClassroomSelect');
+                const options = '<option value="">Select Classroom...</option>' +
+                    (data ? data.map(c => {
+                        classroomsMap[c.id] = c.classroomName;
+                        return `<option value="${c.id}">${c.classroomName}</option>`;
+                    }).join('') : '');
+
+                if (sel) sel.innerHTML = options;
+                if (editSel) editSel.innerHTML = options;
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadCameras() {
+            try {
+                const data = await api.get('/admin/cameras');
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+                if (data && data.length > 0) {
+                    data.forEach(item => {
+                        const cName = classroomsMap[item.classroomId] || '-';
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="ps-4 fw-bold text-primary">${item.cameraCode || 'CAM-#' + item.id}</td>
+                                <td class="font-monospace small text-muted">${item.cameraHttpUrl || '-'}</td>
+                                <td><span class="badge bg-primary bg-opacity-10 text-primary">${cName}</span></td>
+                                <td class="text-end pe-4">
+                                    <button onclick="editCamera(${item.id}, '${item.cameraCode}', '${item.cameraHttpUrl}', '${item.status || 'ACTIVE'}', ${item.classroomId})" class="btn btn-sm btn-light text-primary me-2">
+                                        <i data-lucide="edit-2" style="width:16px"></i>
+                                    </button>
+                                    <button onclick="deleteCamera(${item.id})" class="btn btn-sm btn-light text-danger">
+                                        <i data-lucide="trash-2" style="width:16px"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                    lucide.createIcons();
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="4" class="text-center py-4 text-muted">No cameras found.</td></tr>';
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function createCamera() {
+            const cameraCode = document.getElementById('code').value;
+            const cameraHttpUrl = document.getElementById('url').value;
+            const classroomId = document.getElementById('classroomSelect').value;
+
+            // DTO: { cameraCode, cameraHttpUrl, classroomId, status: "ACTIVE" }
+            const payload = {
+                cameraCode,
+                cameraHttpUrl,
+                classroomId: parseInt(classroomId),
+                status: 'ACTIVE'
+            };
+
+            try {
+                await api.post('/admin/cameras', payload);
+                modal.hide();
+                document.getElementById('addForm').reset();
+                loadCameras();
+            } catch (e) {
+                alert('Failed to add camera: ' + e.message);
+            }
+        }
+
+        function editCamera(id, code, url, status, classroomId) {
+            currentCameraId = id;
+            document.getElementById('editCode').value = code;
+            document.getElementById('editUrl').value = url;
+            document.getElementById('editStatus').value = status;
+            document.getElementById('editClassroomSelect').value = classroomId || "";
+            editModal.show();
+        }
+
+        async function updateCamera() {
+            const cameraCode = document.getElementById('editCode').value;
+            const cameraHttpUrl = document.getElementById('editUrl').value;
+            const status = document.getElementById('editStatus').value;
+            const classroomId = document.getElementById('editClassroomSelect').value;
+
+            const payload = {
+                cameraCode,
+                cameraHttpUrl,
+                status,
+                classroomId: classroomId ? parseInt(classroomId) : null
+            };
+
+            try {
+                await api.put(`/admin/cameras/${currentCameraId}`, payload);
+                editModal.hide();
+                loadCameras();
+            } catch (e) {
+                alert('Failed to update camera: ' + e.message);
+            }
+        }
+
+        async function deleteCamera(id) {
+            if (!confirm('Delete this camera?')) return;
+            try {
+                await api.delete(`/admin/cameras/${id}`);
+                loadCameras();
+            } catch (e) {
+                alert('Failed to delete: ' + e.message);
+            }
+        }
+
+        window.openAddModal = () => modal.show();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,178 @@
+/* Global CSS - Glassmorphism System */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-main);
+    background: var(--bg-gradient);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* --- Layout --- */
+.app-shell {
+    display: flex;
+    min-height: 100vh;
+}
+
+.main-content {
+    flex: 1;
+    padding: 2rem;
+    overflow-y: auto;
+    margin-left: 280px;
+    /* Sidebar width placeholder, adjust if floating */
+}
+
+/* --- Transitions --- */
+.fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* --- Glass Components --- */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--backdrop-blur);
+    -webkit-backdrop-filter: var(--backdrop-blur);
+    border: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px 0 rgba(31, 38, 135, 0.15);
+}
+
+.glass-header {
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* --- Badges --- */
+.badge {
+    padding: 0.5em 0.8em;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    letter-spacing: 0.03em;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-present {
+    background: var(--color-success-bg);
+    color: var(--color-success);
+}
+
+.badge-absent {
+    background: var(--color-danger-bg);
+    color: var(--color-danger);
+}
+
+.badge-uncertain {
+    background: var(--color-warning-bg);
+    color: var(--color-warning);
+    cursor: pointer;
+}
+
+.badge-neutral {
+    background: #f1f5f9;
+    color: #64748b;
+}
+
+.badge-onduty {
+    background: #e0e7ff;
+    color: var(--color-primary);
+}
+
+/* --- Buttons --- */
+.btn-primary-glass {
+    background: var(--color-primary);
+    color: white;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s;
+    box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);
+}
+
+.btn-primary-glass:hover {
+    background: #4338ca;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 8px -1px rgba(79, 70, 229, 0.3);
+}
+
+/* --- Floating Sidebar --- */
+.sidebar-glass {
+    width: var(--sidebar-width);
+    background: var(--sidebar-bg);
+    backdrop-filter: blur(20px);
+    color: white;
+    position: fixed;
+    height: 96vh;
+    top: 2vh;
+    left: 1rem;
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    z-index: 1000;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.nav-link-glass {
+    color: rgba(255, 255, 255, 0.7);
+    padding: 0.8rem 1rem;
+    margin-bottom: 0.5rem;
+    border-radius: 8px;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.2s;
+}
+
+.nav-link-glass:hover,
+.nav-link-glass.active {
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+}
+
+/* Sidebar Responsive */
+@media (max-width: 768px) {
+    .sidebar-glass {
+        display: none;
+        /* Add mobile toggle logic if needed */
+    }
+
+    .main-content {
+        margin-left: 0;
+    }
+}

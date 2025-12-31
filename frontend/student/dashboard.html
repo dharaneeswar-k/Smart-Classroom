@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Student Dashboard - Smart Class</title>
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Glass Styles -->
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/global.css">
+</head>
+
+<body>
+
+    <!-- Sidebar Injected by Layout.js -->
+
+    <main class="main-content fade-in-up">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-5">
+            <div>
+                <h2 class="fw-bold text-primary mb-0">Welcome Back</h2>
+                <p class="text-secondary">Here is your attendance overview for today.</p>
+            </div>
+            <a href="od.html" class="btn btn-primary-glass">
+                <i data-lucide="plus-circle" style="width:18px; margin-bottom:2px"></i> New OD Request
+            </a>
+        </div>
+
+        <!-- Grid -->
+        <div class="row g-4 mb-4">
+
+            <!-- Today's Status Tile -->
+            <div class="col-md-5">
+                <div class="glass-card h-100 d-flex flex-column justify-content-between position-relative overflow-hidden"
+                    style="background: linear-gradient(135deg, var(--color-primary) 0%, #4338ca 100%); color:white; border:none;">
+
+                    <div class="z-1">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <small class="text-white-50 text-uppercase fw-bold ls-1">Today's Status</small>
+                                <h1 class="display-4 fw-bold mt-2 mb-0" id="todayStatus">--</h1>
+                            </div>
+                            <i data-lucide="calendar" class="text-white-50" style="width:32px; height:32px"></i>
+                        </div>
+                        <div class="mt-4">
+                            <span class="badge bg-white bg-opacity-20 fw-normal" id="dateDisplay">...</span>
+                        </div>
+                    </div>
+
+                    <!-- Decorative Blob -->
+                    <div class="position-absolute top-0 end-0 bg-white opacity-10 rounded-circle"
+                        style="width:200px; height:200px; margin-top:-50px; margin-right:-50px;"></div>
+                </div>
+            </div>
+
+            <!-- Analytics Chart -->
+            <div class="col-md-7">
+                <div class="glass-card h-100">
+                    <div class="glass-header mt-0 pt-0 border-0">
+                        <h5 class="fw-bold m-0 text-primary">Attendance Trends</h5>
+                    </div>
+                    <div
+                        style="height: 200px; width: 100%; display: flex; align-items: center; justify-content: center;">
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Recent History -->
+        <div class="glass-card">
+            <div class="glass-header">
+                <h5 class="fw-bold m-0">Recent Activity</h5>
+                <a href="history.html" class="text-decoration-none small fw-bold text-primary">View Full History
+                    &rarr;</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0" style="background: transparent;">
+                    <thead class="text-secondary small text-uppercase">
+                        <tr>
+                            <th class="ps-3 border-0">Date</th>
+                            <th class="text-center border-0">Sessions (1-3)</th>
+                            <th class="text-end pe-3 border-0">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="historyBody" class="border-top-0">
+                        <tr>
+                            <td colspan="3" class="text-center py-4 text-muted">Loading data...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Scripts -->
+    <script src="../shared/api.js"></script>
+    <script src="../shared/auth.js"></script>
+    <script src="../shared/student-layout.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!Auth.checkAuth('ROLE_STUDENT')) return;
+
+            document.getElementById('dateDisplay').textContent = new Date().toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+            try {
+                // 1. Fetch Stats
+                const stats = await api.get('/api/student/dashboard');
+                const statusEl = document.getElementById('todayStatus');
+
+                if (stats) {
+                    if (stats.todayStatus) {
+                        statusEl.textContent = stats.todayStatus.replace('_', ' ');
+                    } else if (stats.attendancePending) {
+                        statusEl.textContent = "Pending";
+                    } else {
+                        statusEl.textContent = "Not Recorded";
+                    }
+                }
+
+                // 2. Fetch History
+                const history = await api.get('/api/student/attendance');
+
+                // Chart Logic
+                initChart(history);
+
+                // Table Logic
+                const tbody = document.getElementById('historyBody');
+                tbody.innerHTML = '';
+
+                // Show last 5
+                const recent = history ? history.slice(0, 5) : [];
+
+                if (recent.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="3" class="text-center py-3 text-muted">No records yet.</td></tr>';
+                } else {
+                    recent.forEach(rec => {
+                        tbody.innerHTML += `
+                            <tr>
+                                <td class="ps-3 fw-medium">${rec.date}</td>
+                                <td class="text-center">
+                                    ${getSimpleBadge(rec.session1Status)}
+                                    ${getSimpleBadge(rec.session2Status)}
+                                    ${getSimpleBadge(rec.session3Status)}
+                                </td>
+                                <td class="text-end pe-3">
+                                    <span class="badge ${getBadgeClass(rec.dailyStatus)}">${rec.dailyStatus || 'Pending'}</span>
+                                </td>
+                            </tr>
+                        `;
+                    });
+                }
+
+            } catch (e) { console.error(e); }
+        });
+
+        function getSimpleBadge(status) {
+            if (status === 'PRESENT') return '<span class="d-inline-block rounded-circle bg-success" style="width:8px; height:8px; margin:0 2px" title="Present"></span>';
+            if (status === 'ABSENT') return '<span class="d-inline-block rounded-circle bg-danger" style="width:8px; height:8px; margin:0 2px" title="Absent"></span>';
+            if (status === 'UNCERTAIN') return '<span class="d-inline-block rounded-circle bg-warning" style="width:8px; height:8px; margin:0 2px" title="Uncertain"></span>';
+            return '<span class="d-inline-block rounded-circle bg-secondary bg-opacity-25" style="width:8px; height:8px; margin:0 2px"></span>';
+        }
+
+        function getBadgeClass(status) {
+            if (status === 'PRESENT' || status === 'ON_DUTY') return 'badge-present';
+            if (status === 'ABSENT') return 'badge-absent';
+            return 'badge-uncertain';
+        }
+
+        function initChart(history) {
+            if (!history) return;
+            const ctx = document.getElementById('attendanceChart');
+
+            const present = history.filter(h => h.dailyStatus === 'PRESENT' || h.dailyStatus === 'ON_DUTY').length;
+            const absent = history.filter(h => h.dailyStatus === 'ABSENT').length;
+            const half = history.filter(h => h.dailyStatus === 'HALF_DAY').length;
+
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Present', 'Absent', 'Half Day'],
+                    datasets: [{
+                        data: [present, absent, half],
+                        backgroundColor: ['#059669', '#dc2626', '#3b82f6'],
+                        borderWidth: 0,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'right' }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Classroom Attendance</title>
+    <!-- CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/global.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+
+<body>
+
+    <!-- Sidebar Injected -->
+
+    <main class="main-content fade-in-up">
+
+        <div class="d-flex justify-content-between align-items-end mb-4">
+            <div>
+                <h6 class="text-uppercase text-secondary fw-bold ls-1 mb-1">Faculty Portal</h6>
+                <h2 class="fw-bold text-primary m-0">Daily Attendance</h2>
+            </div>
+
+            <!-- Controls -->
+            <div class="glass-card mb-0 p-2 d-flex gap-2 align-items-center" style="border-radius: 12px;">
+                <select id="classroomSelect" class="form-select border-0 bg-transparent fw-bold text-primary"
+                    style="width:auto; cursor:pointer;">
+                    <option disabled selected>Select Class...</option>
+                </select>
+                <div style="width:1px; height:24px; background:rgba(0,0,0,0.1)"></div>
+                <input type="date" id="datePicker" class="form-control border-0 bg-transparent fw-bold text-secondary"
+                    style="width:auto;">
+                <button id="loadBtn" class="btn btn-primary-glass btn-sm ms-2">
+                    <i data-lucide="refresh-cw" style="width:16px;"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Blocking Alert -->
+        <div id="blockingAlert" class="glass-card d-none"
+            style="background: var(--color-warning-bg); border-color: var(--color-warning);">
+            <div class="d-flex align-items-center gap-3 text-warning-dark">
+                <i data-lucide="alert-triangle"></i>
+                <div>
+                    <strong>Attendance Blocked:</strong> Some sessions are marked <span
+                        class="badge badge-uncertain">UNCERTAIN</span>.
+                    Please resolve them below to generate the daily report.
+                </div>
+            </div>
+        </div>
+
+        <!-- Matrix Table -->
+        <div class="glass-card">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" style="background: transparent;">
+                    <thead class="text-secondary small text-uppercase">
+                        <tr>
+                            <th class="ps-4 border-0">Roll No</th>
+                            <th class="border-0">Student Name</th>
+                            <th class="text-center border-0">Session 1</th>
+                            <th class="text-center border-0">Session 2</th>
+                            <th class="text-center border-0">Session 3</th>
+                            <th class="text-center border-0">Day Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceBody" class="border-top-0">
+                        <tr>
+                            <td colspan="6" class="text-center py-5 text-muted">Select a Classroom & Date to view data.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modal -->
+    <div class="modal fade" id="resModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content"
+                style="border-radius:24px; border:none; box-shadow: 0 20px 60px rgba(0,0,0,0.2);">
+                <div class="modal-body p-4 text-center">
+                    <div class="rounded-circle bg-warning bg-opacity-10 d-inline-flex p-3 mb-3">
+                        <i data-lucide="help-circle" class="text-warning" style="width:32px; height:32px;"></i>
+                    </div>
+                    <h4 class="fw-bold">Resolve Uncertainty</h4>
+                    <p class="text-muted mb-4">The AI was unsure about <strong id="mStudent"></strong> in <strong
+                            id="mSession"></strong>.</p>
+
+                    <input type="hidden" id="mStudentId">
+                    <input type="hidden" id="mSessionNum">
+
+                    <div class="d-flex gap-2 justify-content-center">
+                        <button onclick="resolve('ABSENT')" class="btn btn-danger px-4 py-2 rounded-3 fw-bold">Mark
+                            Absent</button>
+                        <button onclick="resolve('PRESENT')" class="btn btn-success px-4 py-2 rounded-3 fw-bold">Mark
+                            Present</button>
+                    </div>
+                    <button class="btn btn-link text-muted text-decoration-none mt-3"
+                        data-bs-dismiss="modal">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="../shared/api.js"></script>
+    <script src="../shared/auth.js"></script>
+    <script src="../shared/faculty-layout.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let modal;
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (!Auth.checkAuth('ROLE_FACULTY')) return;
+
+            modal = new bootstrap.Modal(document.getElementById('resModal'));
+            document.getElementById('datePicker').value = new Date().toISOString().split('T')[0];
+
+            // Load Classrooms
+            const classrooms = await api.get('/faculty/dashboard/classrooms');
+            const sel = document.getElementById('classroomSelect');
+            if (classrooms) {
+                sel.innerHTML = classrooms.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                if (classrooms.length > 0) loadData(); // Auto load first
+            }
+
+            document.getElementById('loadBtn').addEventListener('click', loadData);
+            sel.addEventListener('change', loadData);
+            document.getElementById('datePicker').addEventListener('change', loadData);
+        });
+
+        async function loadData() {
+            const cid = document.getElementById('classroomSelect').value;
+            const date = document.getElementById('datePicker').value;
+            if (!cid) return;
+
+            const tbody = document.getElementById('attendanceBody');
+            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">Loading...</td></tr>';
+            document.getElementById('blockingAlert').classList.add('d-none');
+
+            const data = await api.get(`/faculty/attendance?classroomId=${cid}&date=${date}`);
+            tbody.innerHTML = '';
+
+            if (!data || data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center py-5 text-muted">No records found.</td></tr>';
+                return;
+            }
+
+            let blocked = false;
+            data.forEach(row => {
+                if (!row.dailyStatus) blocked = true;
+
+                tbody.innerHTML += `
+                  <tr style="transition:0.2s; border-bottom:1px solid rgba(0,0,0,0.03);">
+                      <td class="ps-4 fw-bold text-primary">${row.studentRollNo}</td>
+                      <td>${row.studentName}</td>
+                      <td class="text-center">${badge(row, 1)}</td>
+                      <td class="text-center">${badge(row, 2)}</td>
+                      <td class="text-center">${badge(row, 3)}</td>
+                      <td class="text-center">
+                          <span class="badge ${row.dailyStatus ? 'badge-present' : 'badge-neutral'}">
+                              ${row.dailyStatus || 'Pending'}
+                          </span>
+                      </td>
+                  </tr>
+               `;
+            });
+
+            if (blocked) document.getElementById('blockingAlert').classList.remove('d-none');
+            lucide.createIcons();
+        }
+
+        function badge(row, sNum) {
+            const status = row[`session${sNum}Status`];
+            if (status === 'PRESENT') return `<span class="badge badge-present">Present</span>`;
+            if (status === 'ABSENT') return `<span class="badge badge-absent">Absent</span>`;
+            if (status === 'UNCERTAIN') return `
+                <span onclick="openRes('${row.studentId}', '${row.studentName}', ${sNum})" 
+                      class="badge badge-uncertain shadow-sm">
+                    <i data-lucide="alert-circle" style="width:12px"></i> Resolve
+                </span>`;
+            return `<span class="badge badge-neutral">-</span>`;
+        }
+
+        window.openRes = (sid, name, sNum) => {
+            document.getElementById('mStudentId').value = sid;
+            document.getElementById('mStudent').innerText = name;
+            document.getElementById('mSessionNum').value = sNum;
+            document.getElementById('mSession').innerText = `Session ${sNum}`;
+            modal.show();
+        };
+
+        window.resolve = async (status) => {
+            const sid = document.getElementById('mStudentId').value;
+            const sNum = document.getElementById('mSessionNum').value;
+            const date = document.getElementById('datePicker').value;
+
+            await api.post('/faculty/attendance/resolve', {
+                studentId: sid, date: date, sessionNumber: sNum, status: status
+            });
+            modal.hide();
+            loadData();
+        };
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,105 @@
+/* Base Reset & Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-body);
+    color: var(--text-main);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Layout Utilities */
+.main-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+.sidebar {
+    width: 260px;
+    background-color: var(--color-primary-900);
+    color: white;
+    flex-shrink: 0;
+    transition: width 0.3s;
+}
+
+.content-area {
+    flex-grow: 1;
+    padding: 2rem;
+    overflow-y: auto;
+}
+
+/* Components */
+.card-custom {
+    background: var(--bg-card);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--color-primary-100);
+    margin-bottom: 1.5rem;
+}
+
+.card-header-custom {
+    padding: 1.25rem 1.5rem;
+    border-bottom: 1px solid var(--color-primary-100);
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-body-custom {
+    padding: 1.5rem;
+}
+
+/* Badges */
+.badge-custom {
+    padding: 0.35em 0.65em;
+    border-radius: var(--radius-sm);
+    font-weight: 500;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.badge-present {
+    background-color: var(--color-success-50);
+    color: var(--color-success-700);
+    border: 1px solid var(--color-success-100);
+}
+
+.badge-absent {
+    background-color: var(--color-danger-50);
+    color: var(--color-danger-700);
+    border: 1px solid var(--color-danger-100);
+}
+
+.badge-uncertain {
+    background-color: var(--color-warning-50);
+    color: var(--color-warning-700);
+    border: 1px solid var(--color-warning-100);
+    cursor: pointer;
+    /* Clickable for resolution */
+}
+
+.badge-neutral {
+    background-color: var(--color-primary-100);
+    color: var(--color-primary-600);
+}
+
+/* Auth Page Specific */
+.auth-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--color-primary-50) 0%, #e2e8f0 100%);
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 400px;
+    padding: 2.5rem;
+    background: white;
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+}
