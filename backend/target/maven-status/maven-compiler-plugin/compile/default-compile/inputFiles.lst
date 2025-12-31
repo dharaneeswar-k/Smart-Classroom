@@ -16,12 +16,14 @@ D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backen
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\repository\AttendanceRepository.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\controller\integration\IntegrationPresenceEventController.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\admin\StudentDTO.java
+D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\ai\AiClassroomDTO.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\service\faculty\FacultyClassroomService.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\service\admin\AdminClassroomService.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\config\DataSeeder.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\controller\integration\CameraIntegrationController.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\repository\AttendancePolicyRepository.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\controller\faculty\FacultyController.java
+D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\service\AiIntegrationService.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\model\User.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\repository\SessionAttendanceRepository.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\faculty\FacultyStudentDTO.java
@@ -29,6 +31,7 @@ D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backen
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\model\Classroom.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\faculty\FacultyODRequestDTO.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\service\integration\CameraIntegrationService.java
+D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\ai\AiStudentDTO.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\model\Faculty.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\controller\admin\AdminFacultyController.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\model\ODRequest.java
@@ -43,6 +46,7 @@ D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backen
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\model\PresenceEvent.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\service\integration\StudentFaceServiceImpl.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\AuthResponse.java
+D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\controller\ai\AiIntegrationController.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\attendance\StudentSlotPresenceDTO.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\service\integration\PresenceEventService.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\controller\faculty\FacultyClassroomController.java
@@ -53,6 +57,7 @@ D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backen
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\service\student\StudentDashboardService.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\repository\StudentRepository.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\security\jwt\JwtAuthenticationFilter.java
+D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\ai\AiEventWrapperDTO.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\service\CustomUserDetailsService.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\controller\student\StudentAttendanceController.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\controller\integration\StudentFaceController.java
@@ -85,6 +90,7 @@ D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backen
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\faculty\FacultyAttendanceDTO.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\PresenceEventRequest.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\service\attendance\PresenceEventService.java
+D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\ai\AiBootstrapDTO.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\student\StudentAttendanceDTO.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\security\jwt\JwtUtil.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\student\StudentODHistoryDTO.java
@@ -97,6 +103,8 @@ D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backen
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\service\integration\PresenceEventServiceImpl.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\model\FacultyClassroom.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\repository\FacultyRepository.java
+D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\ai\AiPresenceEventDTO.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\scheduler\AttendanceScheduler.java
+D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\dto\ai\AiCameraDTO.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\controller\student\StudentAnalyticsController.java
 D:\CODING STUFFS\Smart-Classroom\backend\src\main\java\com\smartclassroom\backend\controller\admin\AdminStudentController.java
